@@ -19,9 +19,7 @@ FramelessWindow::FramelessWindow(QWidget *parent)
     setWindowFlags(Qt::FramelessWindowHint | Qt::Window);
     setAttribute(Qt::WA_StyledBackground, true);
 
-    // ========== 标题栏 固定在顶部 ==========
     titlebar = new QFrame(this);
-    titlebar->setStyleSheet("background-color: #2979FF;");
 
     min = new QPushButton;
     max = new QPushButton;
@@ -50,7 +48,6 @@ FramelessWindow::FramelessWindow(QWidget *parent)
     titleitems = new QWidget(this);
     mainitems = new QWidget(this);
 
-    // ========== 背景控件 ==========
     m_backgroundView = new QGraphicsView(this);
     m_backgroundView->setStyleSheet("border:none; background:transparent;");
     m_backgroundView->setScene(new QGraphicsScene(this));
@@ -64,16 +61,15 @@ FramelessWindow::FramelessWindow(QWidget *parent)
 
     m_mediaPlayer = new QMediaPlayer(this);
     QAudioOutput* audioOut = new QAudioOutput(this);
-    audioOut->setVolume(1.0); // 100% 音量
+    audioOut->setVolume(1.0);
     m_mediaPlayer->setAudioOutput(audioOut);
     m_mediaPlayer->setVideoOutput(m_videoWidget);
-    m_mediaPlayer->setLoops(-1); // 循环播放
+    m_mediaPlayer->setLoops(-1);
 
     mainitems->setStyleSheet("background:transparent;");
     mainitems->setParent(this);
     mainitems->raise();
 
-    // ========== 布局：只给标题栏用 ==========
     windowctrlbtnslayout = new QHBoxLayout;
     windowctrlbtnslayout->setContentsMargins(0,0,10,0);
     windowctrlbtnslayout->setSpacing(8);
@@ -100,6 +96,7 @@ FramelessWindow::FramelessWindow(QWidget *parent)
     setupTrayIcon();
     loadConfig();
     setMinimumSize(320, 180);
+    saveConfig();
 }
 
 void FramelessWindow::setTitleIconPath(const QString &path)
@@ -154,15 +151,12 @@ void FramelessWindow::updateBackgroundImage()
     m_backgroundView->scene()->setSceneRect(m_backgroundView->viewport()->rect());
 }
 
-// ========== 核心修复：窗口大小变化时，固定标题栏位置 ==========
 void FramelessWindow::resizeEvent(QResizeEvent *event)
 {
     QWidget::resizeEvent(event);
 
-    // 标题栏永远在最顶部
     titlebar->setGeometry(0, 0, width(), 48);
 
-    // 背景区域填满下方
     int bgY = 48;
     int bgH = height() - bgY;
 
@@ -370,7 +364,7 @@ void FramelessWindow::loadConfig()
 
     if(m_savedTitleMode == text)
     {
-        setTitleText(m_settings.value("title_text","标题").toString());
+        setTitleText(m_settings.value("title_text","Test").toString());
     }
     else
     {
@@ -383,6 +377,11 @@ void FramelessWindow::loadConfig()
 
     m_lastImagePath = m_settings.value("background/image", "").toString();
     m_lastVideoPath = m_settings.value("background/video", "").toString();
+
+    m_titleBarColor = m_settings.value("color/titleBar", "#87CEFA").value<QColor>();
+    m_windowColor   = m_settings.value("color/window", "#C0C0C0").value<QColor>();
+    setTitleBarColor(m_titleBarColor);
+    setWindowColor(m_windowColor);
 
     refreshBackgroundDisplay();
 
@@ -414,6 +413,9 @@ void FramelessWindow::saveConfig()
 
     m_settings.setValue("background/image", m_lastImagePath);
     m_settings.setValue("background/video", m_lastVideoPath);
+
+    m_settings.setValue("color/titleBar", m_titleBarColor.name());
+    m_settings.setValue("color/window", m_windowColor.name());
 }
 
 void FramelessWindow::setupTrayIcon()
@@ -430,7 +432,6 @@ void FramelessWindow::setupTrayIcon()
     m_trayIcon->setContextMenu(trayMenu);
 
     connect(m_trayIcon, &QSystemTrayIcon::activated, this, [this](QSystemTrayIcon::ActivationReason reason){
-        // 就这一行修好了！
         if(reason == QSystemTrayIcon::Trigger)
         {
             showNormal();raise();activateWindow();
@@ -491,6 +492,7 @@ bool FramelessWindow::nativeEvent(const QByteArray& eventType, void* message, qi
 #endif
     return QWidget::nativeEvent(eventType, message, result);
 }
+
 void FramelessWindow::setVideoVolume(float volume)
 {
     if (m_mediaPlayer && m_mediaPlayer->audioOutput()) {
@@ -503,4 +505,16 @@ void FramelessWindow::muteVideo(bool mute)
     if (m_mediaPlayer && m_mediaPlayer->audioOutput()) {
         m_mediaPlayer->audioOutput()->setMuted(mute);
     }
+}
+
+void FramelessWindow::setTitleBarColor(const QColor &color)
+{
+    m_titleBarColor = color;
+    titlebar->setStyleSheet(QString("background-color: %1;").arg(color.name()));
+}
+
+void FramelessWindow::setWindowColor(const QColor &color)
+{
+    m_windowColor = color;
+    setStyleSheet(QString("background-color: %1;").arg(color.name()));
 }
