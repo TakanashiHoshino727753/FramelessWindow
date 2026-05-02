@@ -281,6 +281,7 @@ void FramelessWindow::setBgMode(BGMode mode)
 {
     m_bgMode = mode;
     bgPicture->setVisible(mode == PictureBG);
+    setBgPic(m_bgPicPath);
 }
 
 void FramelessWindow::setBgColor(const QString &css)
@@ -294,14 +295,33 @@ void FramelessWindow::setBgPic(const QString &filePath)
     m_bgPicPath = filePath;
     QPixmap pix(filePath);
     if (!pix.isNull()) {
-        bgPicture->setPixmap(pix);
-        bgPicture->setScaledContents(false);
+
+        // 拿到当前背景区域大小
+        QSize targetSize = bgPicture->size();
+
+        // ==============================
+        // 正确实现 3 种背景策略
+        // ==============================
+        if (m_bgStrategy == Stretch) {
+            // 拉伸：强制铺满，不保持比例，会变形
+            bgPicture->setPixmap(pix.scaled(targetSize, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+        }
+        else if (m_bgStrategy == Adapt) {
+            // 适应：保持比例，完整显示，可能有黑边
+            bgPicture->setPixmap(pix.scaled(targetSize, Qt::KeepAspectRatio, Qt::SmoothTransformation));
+        }
+        else if (m_bgStrategy == Fill) {
+            // 填充：保持比例，无黑边，裁剪超出部分
+            bgPicture->setPixmap(pix.scaled(targetSize, Qt::KeepAspectRatioByExpanding, Qt::SmoothTransformation));
+        }
     }
+    bgPicture->setScaledContents(false);
 }
 
 void FramelessWindow::setBgPicStrategy(BGGraphicStrategy strategy)
 {
     m_bgStrategy = strategy;
+    setBgPic(m_bgPicPath);
 }
 
 /**
@@ -315,6 +335,7 @@ void FramelessWindow::resizeEvent(QResizeEvent *event)
     bgPicture->setGeometry(0,th,w,h-th);
     mainWidget->setGeometry(0,th,w,h-th);
     mainWidget->raise();
+    setBgPic(m_bgPicPath);
 }
 
 /**
