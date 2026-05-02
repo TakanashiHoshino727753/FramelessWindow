@@ -457,5 +457,28 @@ void FramelessWindow::mouseReleaseEvent(QMouseEvent *e)
     QWidget::mouseReleaseEvent(e);
 }
 
+// 托盘左键/双击触发
+void FramelessWindow::onTrayIconActivated(QSystemTrayIcon::ActivationReason reason)
+{
+    if (reason == QSystemTrayIcon::Trigger || reason == QSystemTrayIcon::DoubleClick)
+    {
+        slotTrayRestore();
+    }
+}
+
+// 托盘菜单：还原窗口
+void FramelessWindow::slotTrayRestore()
+{
+    showNormal();
+    show();
+    activateWindow();
+    raise();
+}
+
+// 托盘菜单：关闭程序
+void FramelessWindow::slotTrayQuit()
+{
+    qApp->quit();
+}
 // ====================== 析构 ======================
 FramelessWindow::~FramelessWindow() = default;
