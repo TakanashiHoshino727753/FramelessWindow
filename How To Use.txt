@@ -1,58 +1,30 @@
-PS：如果你怕更改错误，可以直接用我改好的版本，将对应文件复制替换即可
-1. 基类下拉框添加 FramelessWindow
-找到："items": [ "QMainWindow", "QWidget", "QDialog" ]
-改为："items": [ "QMainWindow", "QWidget", "QDialog", "FramelessWindow" ]
-2. 类名输入框添加逻辑
-找到："text": "%{JS: value('BaseClass') ? value('BaseClass').slice(1) : 'MyClass'}"
-改为："text": "%{JS: value('BaseClass') === 'FramelessWindow' ? 'MainWindow' : (value('BaseClass') ? value('BaseClass').slice(1) : 'MyClass')}",
-"enabled": "%{JS: value('BaseClass') !== 'FramelessWindow'}"
-3. 头文件名自动判断
-找到："text": "%{JS: Cpp.classToFileName(value('Class'), Util.preferredSuffix('text/x-c++hdr'))}"
-改为："text": "%{JS: value('BaseClass') === 'FramelessWindow' ? 'mainwindow.h' : Cpp.classToFileName(value('Class'), Util.preferredSuffix('text/x-c++hdr'))}"
-4. 源文件名自动判断
-找到："text": "%{JS: Cpp.classToFileName(value('Class'), Util.preferredSuffix('text/x-c++src'))}"
-改为："text": "%{JS: value('BaseClass') === 'FramelessWindow' ? 'mainwindow.cpp' : Cpp.classToFileName(value('Class'), Util.preferredSuffix('text/x-c++src'))}"
-5. UI 文件名自动判断
-找到："text": "%{JS: Cpp.classToFileName(value('Class'), 'ui')}"
-改为："text": "%{JS: value('BaseClass') === 'FramelessWindow' ? 'mainwindow.ui' : Cpp.classToFileName(value('Class'), 'ui')}"
-6. 自动生成 FramelessWindow 源码
-找到末尾：
-{
-"source": "../git.ignore",
-"target": ".gitignore",
-"condition": "%{JS: !value('IsSubproject') && value('VersionControl') === 'G.Git'}"
+一、把这两个文件（FramelessWindow.h FramelessWindow.cpp）放到你的项目根目录（和main.cpp同级）
+二、修改CMakeLists.txt
+1.在project(YourProjectName)后加上include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+2.把FramelessWindow加入编译
+找到add_executable语句，在里面加上FramelessWindow.h和FramelessWindow.cpp 就像下面那样
+add_executable(${PROJECT_NAME}
+main.cpp
+FramelessWindow.h#加这个
+FramelessWindow.cpp#加这个
+)
+三、创建你的窗口子类（例如Form）
+1.Form.h
+#include"FramelessWindow.h"//包含基类头文件
+class Form:public FramelessWindow//继承基类
+...
+public://构造函数：接收配置文件路径
+explicit Form(const QString &configPath,QWidget *parent = nullptr);
+...
+2.Form.cpp
+//在初始化列表里把配置路径传给基类
+Form::Form(const QString &configPath,QWidget *parent):FramelessWindow(configPath,parent),ui(new Ui::Form)
+...
+四、main.cpp用法
+int main(int argc,char *argv[ ]){
+QApplication a(argc,argv);//设置配置文件路径（任意路径都可以）
+QString configPath="window_config.ini";//创建窗口并传入路径
+Form w(configPath);
+w.show();
+return a.exec();
 }
-在后面添加 2 个文件生成项：
-{
-"source": "FramelessWindow.h",
-"target": "FramelessWindow.h"
-},
-{
-"source": "FramelessWindow.cpp",
-"target": "FramelessWindow.cpp"
-}
-注意：原来的
-{
-"source": "../git.ignore",
-"target": ".gitignore",
-"condition": "%{JS: !value('IsSubproject') && value('VersionControl') === 'G.Git'}"
-}
-要在括号后加上逗号","
-二、修改 widget.h（1 处）
-找到：%{JS: QtSupport.qtIncludes([ 'QtGui/' + value('BaseClass') ], [ 'QtWidgets/' + value('BaseClass') ]) }
-替换为：%{JS: (value('BaseClass') === 'FramelessWindow') ? '#include "FramelessWindow.h"' : QtSupport.qtIncludes([ 'QtGui/' + value('BaseClass') ], [ 'QtWidgets/' + value('BaseClass') ]) }
-三、修改 CMakeLists-Qt6.txt（2 处）
-1. 添加依赖
-找到：find_package(Qt6 REQUIRED COMPONENTS Core Widgets)
-改为：find_package(Qt6 REQUIRED COMPONENTS Core Widgets Gui Multimedia MultimediaWidgets)
-2. 加入 FramelessWindow 编译
-找到：
-%{HdrFileName}
-%{SrcFileName}
-在后面添加：
-FramelessWindow.h
-FramelessWindow.cpp
-四、新建 2 个文件（必须放到模板目录）
-将以下文件复制到qtwidgetsapplication/：
-FramelessWindow.h
-FramelessWindow.cpp
