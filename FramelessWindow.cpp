@@ -12,7 +12,6 @@ FramelessWindow::FramelessWindow(const QString &configPath, QWidget *parent)
 {
     // ====================== 窗口基础属性 ======================
     this->setAttribute(Qt::WA_StyledBackground);
-    this->setAttribute(Qt::WA_TranslucentBackground);
     this->setWindowFlags(Qt::FramelessWindowHint | Qt::Window);
     this->setAttribute(Qt::WA_Hover, true);
     this->resize(900, 600);
