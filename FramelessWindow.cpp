@@ -88,9 +88,28 @@ FramelessWindow::FramelessWindow(const QString &configPath, QWidget *parent)
     m_mainOpacity->setOpacity(1.0);
     mainWidget->setGraphicsEffect(m_mainOpacity);
 
-    // ====================== 系统托盘 ======================
+    // ====================== 系统托盘 + 右键菜单 ======================
     m_trayIcon = new QSystemTrayIcon(this);
-    m_trayIcon->setIcon(QIcon("D:/test.png"));
+    m_trayIcon->setIcon(QIcon("D:/Users/Administrator/Desktop/target.png"));
+
+    // 右键菜单
+    m_trayMenu = new QMenu(this);
+    m_actRestore = new QAction("还原窗口", this);
+    m_actQuit    = new QAction("关闭程序", this);
+
+    m_trayMenu->addAction(m_actRestore);
+    m_trayMenu->addSeparator();  // 分割线
+    m_trayMenu->addAction(m_actQuit);
+
+    // 绑定菜单点击
+    connect(m_actRestore, &QAction::triggered, this, &FramelessWindow::slotTrayRestore);
+    connect(m_actQuit,    &QAction::triggered, this, &FramelessWindow::slotTrayQuit);
+
+    // 绑定托盘左键/双击事件
+    connect(m_trayIcon, &QSystemTrayIcon::activated, this, &FramelessWindow::onTrayIconActivated);
+
+    // 设置右键菜单
+    m_trayIcon->setContextMenu(m_trayMenu);
     m_trayIcon->show();
 
     // ====================== 加载配置 ======================
