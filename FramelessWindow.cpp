@@ -27,6 +27,8 @@ FramelessWindow::FramelessWindow(const QString &configPath, QWidget *parent)
     titlePic->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     titleText->setAlignment(Qt::AlignLeft | Qt::AlignVCenter);
     titleWidget = new QWidget(titlebar);
+    QHBoxLayout *titleWidgetLayout = new QHBoxLayout(titleWidget);
+    titleWidgetLayout->setContentsMargins(0,0,0,0);
     windowCtrlBtns = new QWidget(titlebar);
 
     // 标题内部布局
