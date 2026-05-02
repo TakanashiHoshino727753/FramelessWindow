@@ -14,6 +14,8 @@
 #include <QSettings>
 #include <QTimer>
 #include <QStyle>
+#include <QMenu>
+#include <QAction>
 
 // Windows 平台原生支持
 #ifdef Q_OS_WIN
@@ -85,6 +87,9 @@ private slots:
     void on_clicked_min_btn();  // 最小化
     void on_clicked_max_btn();  // 最大化/还原
     void on_clicked_close_btn();// 关闭（支持记忆）
+    void onTrayIconActivated(QSystemTrayIcon::ActivationReason reason);
+    void slotTrayRestore();
+    void slotTrayQuit();
 
 private:
     // ====================== 内部工具函数 ======================
@@ -138,4 +143,10 @@ private:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
+
+    QSystemTrayIcon *m_trayIcon;
+    QMenu           *m_trayMenu;
+    QAction         *m_actRestore;
+    QAction         *m_actQuit;
+
 };
