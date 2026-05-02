@@ -90,8 +90,6 @@ FramelessWindow::FramelessWindow(const QString &configPath, QWidget *parent)
 
     // ====================== 系统托盘 + 右键菜单 ======================
     m_trayIcon = new QSystemTrayIcon(this);
-    m_trayIcon->setIcon(QIcon("D:/Users/Administrator/Desktop/target.png"));
-
     // 右键菜单
     m_trayMenu = new QMenu(this);
     m_actRestore = new QAction("还原窗口", this);
@@ -177,6 +175,9 @@ void FramelessWindow::loadConfig()
     QString closeAct = cfg.value("window/closeAction", "ExitProgram").toString();
     m_closeAction = (closeAct == "MinimizeToTray") ? MinimizeToTray : ExitProgram;
 
+    // 托盘图标
+    m_trayIconPath = cfg.value("tray/iconPath", "").toString();
+
     // 应用配置
     setTitleBarColor(m_titleBarColor);
     setTitlePlace(m_titlePlace);
@@ -189,6 +190,7 @@ void FramelessWindow::loadConfig()
     setBgColor(m_bgColorValue);
     setBgPic(m_bgPicPath);
     setBgPicStrategy(m_bgStrategy);
+    m_trayIcon->setIcon(QIcon(m_trayIconPath));
 }
 
 /**
@@ -226,6 +228,9 @@ void FramelessWindow::saveConfig()
     cfg.setValue("title/color", m_titleColorValue);
     cfg.setValue("title/icon", m_titlePicPath);
     cfg.setValue("titlebar/color", m_titleBarColor);
+
+    // 托盘
+    cfg.setValue("tray/iconPath", m_trayIconPath);
 
     // 关闭操作
     cfg.setValue("window/closeAction", m_closeAction == MinimizeToTray ? "MinimizeToTray" : "ExitProgram");
@@ -479,6 +484,12 @@ void FramelessWindow::slotTrayRestore()
 void FramelessWindow::slotTrayQuit()
 {
     qApp->quit();
+}
+
+// 托盘图标
+void FramelessWindow::setTrayIcon(const QString &filePath){
+    m_trayIconPath = filePath;
+    m_trayIcon->setIcon(QIcon(filePath));
 }
 // ====================== 析构 ======================
 FramelessWindow::~FramelessWindow() = default;

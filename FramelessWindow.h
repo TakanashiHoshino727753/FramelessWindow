@@ -72,6 +72,9 @@ public:
     void addMainWidget(QWidget *widget);
     void setMainAlpha(int alpha);
 
+    // ======================= 托盘图标 =======================
+    void setTrayIcon(const QString &filePath);
+
     // ====================== 配置记忆化 ======================
     void loadConfig();
     void saveConfig();
@@ -120,6 +123,8 @@ private:
     QMenu           *m_trayMenu;
     QAction         *m_actRestore;
     QAction         *m_actQuit;
+    QString         m_trayIconPath;
+
 
     // ====================== 配置记忆变量 ======================
     BGMode m_bgMode;
@@ -146,5 +151,4 @@ private:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-
 };
