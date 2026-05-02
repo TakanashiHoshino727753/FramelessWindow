@@ -299,6 +299,13 @@ void FramelessWindow::resizeEvent(QResizeEvent *event)
  */
 void FramelessWindow::on_clicked_close_btn()
 {
+    // 如果是子窗口，直接关闭，不执行退出逻辑
+    if (this->parent() != nullptr) {
+        this->QWidget::close();
+        return;
+    }
+
+    // 下面的逻辑只给【主窗口】执行
     QSettings cfg(m_configPath, QSettings::IniFormat);
     if (cfg.contains("window/closeAction"))
     {
@@ -309,7 +316,7 @@ void FramelessWindow::on_clicked_close_btn()
         return;
     }
 
-    // 首次选择关闭行为
+    // 首次选择关闭行为（仅主窗口）
     QDialog d(this);
     d.setFixedSize(320,180);
     QLabel *text = new QLabel("请选择关闭操作（仅首次）");
