@@ -117,6 +117,9 @@ private:
 
     // ====================== 系统托盘 ======================
     QSystemTrayIcon *m_trayIcon;
+    QMenu           *m_trayMenu;
+    QAction         *m_actRestore;
+    QAction         *m_actQuit;
 
     // ====================== 配置记忆变量 ======================
     BGMode m_bgMode;
@@ -143,10 +146,5 @@ private:
     void mousePressEvent(QMouseEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mouseReleaseEvent(QMouseEvent *event) override;
-
-    QSystemTrayIcon *m_trayIcon;
-    QMenu           *m_trayMenu;
-    QAction         *m_actRestore;
-    QAction         *m_actQuit;
 
 };
